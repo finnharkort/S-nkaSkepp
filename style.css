@@ -1,0 +1,45 @@
+* {
+  padding: 0;
+  border: 0;
+}
+
+main {
+  height: 90vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.board {
+  display: grid;
+  height: 40vw;
+  width: 40vw;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 2px;
+}
+
+.player button {
+  background-color: red;
+}
+
+.player button:hover {
+  background-color: blue;
+}
+
+.computer button {
+  background-color: blue;
+}
+
+.computer button:hover {
+  background-color: red;
+}
+
+.selected {
+  background-color: yellow !important;
+}
+
+.permSelected {
+  background-color: purple !important;
+}
