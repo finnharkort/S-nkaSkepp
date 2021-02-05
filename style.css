@@ -20,12 +20,30 @@ main {
   gap: 2px;
 }
 
+.flex-row-evenly {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.flex-column-evenly {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.size {
+  width: 5vw;
+  height: 5vw;
+  background-color: red;
+}
+
 .player button {
   background-color: red;
 }
 
 .player button:hover {
-  background-color: blue;
+  background-color: purple;
 }
 
 .computer button {
@@ -41,5 +59,12 @@ main {
 }
 
 .permSelected {
-  background-color: purple !important;
+  background-color: blue !important;
+}
+
+#rotate {
+  width: 5vw;
+  height: 5vw;
+  background-color: green;
+  color: white;
 }
