@@ -68,3 +68,7 @@ main {
   background-color: green;
   color: white;
 }
+
+.hidden {
+  display: none;
+}
