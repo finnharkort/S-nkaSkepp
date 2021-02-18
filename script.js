@@ -1,158 +1,336 @@
 "use strict";
 
+//player
 let pCells = document.querySelector(".player").children;
 let rotateButton = document.querySelector("#rotate");
 let pCellList = Array.from(pCells);
 let pValueList = new Array(64);
 let pSelectList = new Array(64);
-let pSelectedY;
-let pSelectedX;
-let pBoatLength = 4;
-let pBoatDir = 1;
-let pBoatMax = 6;
-let boatAmounts = new Array(3);
+let playerY;
+let playerX;
+let playerAdd = true;
+let playerGuess = new Array(64);
+let guessMaxPlayer = 18;
+
+//computer
+let cCells = document.querySelector(".computer").children;
+let cCellList = Array.from(cCells);
+let cValueList = new Array(64);
+let cSelectList = new Array(64);
+let computerX;
+let computerY;
+let computerGuess = new Array(64);
+let guessMaxComputer = 18;
+
+//both
+let boatLength = 4;
+let boatDir = 1;
+let boatMaxAmount = 6;
+
 
 SetupPlayer();
-AddListeners();
-document.getElementById("boatsLeft").innerHTML = pBoatMax;
+SetupComputer();
+AddListenersPlayer();
+AddListenersComputer();
+document.getElementById("boatsLeft").innerHTML = boatMaxAmount;
 
-function boatMan(boatMax) {
-  console.log("hejhej");
-  switch (boatMax) {
-    case 4:
-      pBoatLength = 3;
-      break;
-    case 2:
-      pBoatLength = 2;
-      break;
-  }
+function boatMan() {
+    switch (boatMaxAmount) {
+        case 6:
+            boatLength = 4;
+            break;
+        case 4:
+            boatLength = 3;
+            break;
+        case 2:
+            boatLength = 2;
+            break;
+        case 0:
+            boatMaxAmount = 6;
+            playerAdd = false;
+            ComputerBoardBoats();
+            break;
+    }
 }
 
 function SetupPlayer() {
-  for (let i = 0; i < 64; i++) {
-    pCellList = pCellList.filter((i) => i.className !== "x-value");
-    pCellList = pCellList.filter((i) => i.className !== "y-value");
-  }
+    for (let i = 0; i < 64; i++) {
+        pCellList = pCellList.filter((i) => i.className !== "x-value");
+        pCellList = pCellList.filter((i) => i.className !== "y-value");
+    }
 
-  for (let i = 0; i < 64; i++) {
-    pValueList[i] = pCellList[i].value;
-  }
+    for (let i = 0; i < 64; i++) {
+        pValueList[i] = pCellList[i].value;
+    }
 
-  for (let i = 0; i < 64; i++) {
-    pSelectList[i] = false;
-  }
+    for (let i = 0; i < 64; i++) {
+        pSelectList[i] = false;
+        playerGuess[i] = false;
+    }
 }
 
-function AddListeners() {
-  for (let i = 0; i < 64; i++) {
-    pCellList[i].addEventListener("mouseover", (e) => {
-      e.preventDefault();
-      pSelectedY = parseInt(pValueList[i].charAt(0));
-      pSelectedX = parseInt(pValueList[i].charAt(2));
-      displayBoat(pBoatLength, pBoatDir);
-    });
-    pCellList[i].addEventListener("mouseout", (e) => {
-      e.preventDefault();
-      pCellList[i].classList.remove("selected");
-      removeBoat(pBoatLength, pBoatDir);
-    });
-    pCellList[i].addEventListener("click", (e) => {
-      e.preventDefault();
-      pSelectedY = parseInt(pValueList[i].charAt(0));
-      pSelectedX = parseInt(pValueList[i].charAt(2));
-      addBoat(pBoatLength, pBoatDir);
-    });
-  }
-  rotateButton.addEventListener("click", (e) => {
-    if (pBoatDir === 1) {
-      pBoatDir = 2;
-    } else {
-      pBoatDir = 1;
+function SetupComputer(){
+    for (let i = 0; i < 64; i++) {
+        cCellList = cCellList.filter((i) => i.className !== "x-value");
+        cCellList = cCellList.filter((i) => i.className !== "y-value");
     }
-  });
+    for (let i = 0; i < 64; i++) {
+        cValueList[i] = cCellList[i].value;
+    }
+    for (let i = 0; i < 64; i++) {
+        cSelectList[i] = false;
+        computerGuess[i] = false;
+    }
+}
+
+function AddListenersPlayer() {
+    for (let i = 0; i < 64; i++) {
+        pCellList[i].addEventListener("mouseover", (e) => {
+            e.preventDefault();
+            playerY = parseInt(pValueList[i].charAt(0));
+            playerX = parseInt(pValueList[i].charAt(2));
+            displayBoat(boatLength, boatDir);
+        });
+        pCellList[i].addEventListener("mouseout", (e) => {
+            e.preventDefault();
+            pCellList[i].classList.remove("selected");
+            removeBoat(boatLength, boatDir);
+        });
+        pCellList[i].addEventListener("click", (e) => {
+            e.preventDefault();
+            playerY = parseInt(pValueList[i].charAt(0));
+            playerX = parseInt(pValueList[i].charAt(2));
+            AddBoatPlayer(boatLength, boatDir);
+        });
+    }
+    rotateButton.addEventListener("click", (e) => {
+        if (boatDir === 1) {
+        boatDir = 2;
+        } else {
+        boatDir = 1;
+        }
+    });
+}
+
+function AddListenersComputer(){
+    for (let i = 0; i < 64; i++) {
+        cCellList[i].addEventListener("click", (e) => {
+            e.preventDefault();
+            let a = parseInt(cValueList[i].charAt(0));
+            let b = parseInt(cValueList[i].charAt(2));
+            if(computerGuess[cValueList.indexOf((a) + "," + b)] === false){
+                computerGuess[i] = true;
+                BoatGuessComputer();
+                if (cSelectList[cValueList.indexOf((a) + "," + b)] === true) {
+                    cCellList[i].innerHTML = "<img src=\"X.png\">";
+                    guessMaxPlayer--;
+                    if(guessMaxPlayer === 0){
+                        console.log("player wins");
+                    }
+                    return true;
+                }
+                else{
+                    cCellList[i].innerHTML = "<img src=\"O.png\">";
+                }
+            }
+            
+        });
+    }
 }
 
 function displayBoat(length, direction) {
-  if (
-    CheckOccupied(length, direction) === false &&
-    CheckEdge(length, direction, pSelectedX, pSelectedY) === false &&
-    pBoatMax > 0
-  ) {
-    switch (direction) {
-      case 1:
-        for (let i = 0; i < length; i++) {
-          pCellList[
-            pValueList.indexOf(pSelectedY + i + "," + pSelectedX)
-          ].classList.add("selected");
-        }
-        break;
+    if (
+    CheckPlacement(length, direction, playerX, playerY, pSelectList, pValueList) === true &&
+    playerAdd == true){
+        switch (direction) {
+        case 1:
+            for (let i = 0; i < length; i++) {
+            pCellList[
+                pValueList.indexOf(playerY + i + "," + playerX)
+            ].classList.add("selected");
+            }
+            break;
 
-      case 2:
-        for (let i = 0; i < length; i++) {
-          pCellList[
-            pValueList.indexOf(pSelectedY + "," + (pSelectedX + i))
-          ].classList.add("selected");
+        case 2:
+            for (let i = 0; i < length; i++) {
+            pCellList[
+                pValueList.indexOf(playerY + "," + (playerX + i))
+            ].classList.add("selected");
+            }
+            break;
         }
-        break;
     }
-  }
 }
 
-function addBoat(length, direction) {
-  if (
-    CheckOccupied(length, direction) === false &&
-    CheckEdge(length, direction, pSelectedX, pSelectedY) === false &&
-    pBoatMax > 0
-  ) {
-    pBoatMax--;
-    boatMan(pBoatMax);
-    document.getElementById("boatsLeft").innerHTML = pBoatMax;
-    switch (direction) {
-      case 1:
-        for (let i = 0; i < length; i++) {
-          pCellList[
-            pValueList.indexOf(pSelectedY + i + "," + pSelectedX)
-          ].classList.add("permSelected");
-          pCellList[
-            pValueList.indexOf(pSelectedY + i + "," + pSelectedX)
-          ].classList.remove("selected");
-          pSelectList[
-            pValueList.indexOf(pSelectedY + i + "," + pSelectedX)
-          ] = true;
-        }
-        break;
+function AddBoatPlayer(length, direction) {
+    if (
+    CheckPlacement(length, direction, playerX, playerY, pSelectList, pValueList) === true &&
+    playerAdd == true){
+        boatMaxAmount--;
+        
+        document.getElementById("boatsLeft").innerHTML = boatMaxAmount;
+        switch (direction) {
+            case 1:
+                for (let i = 0; i < length; i++) {
+                    if(i === 0){
+                        pCellList[
+                        pValueList.indexOf(playerY + i + "," + playerX)
+                        ].classList.add("edgeTop");
+                    }
+                    else if(i === length - 1){
+                        pCellList[
+                        pValueList.indexOf(playerY + i + "," + playerX)
+                        ].classList.add("edgeBottom");
+                    }
+                    
+                    else{
+                        pCellList[
+                        pValueList.indexOf(playerY + i + "," + playerX)
+                        ].classList.add("edge");
+                    }
+                
+                    pCellList[
+                        pValueList.indexOf(playerY + i + "," + playerX)
+                    ].classList.add("permSelected");
+                    pCellList[
+                        pValueList.indexOf(playerY + i + "," + playerX)
+                    ].classList.remove("selected");
+                    pSelectList[
+                        pValueList.indexOf(playerY + i + "," + playerX)
+                    ] = true;
+                }
+                break;
+            case 2:
+                for (let i = 0; i < length; i++) {
+                    if(i === 0){
+                        pCellList[
+                        pValueList.indexOf(playerY + "," + (playerX + i))
+                        ].classList.add("edgeLeft");
+                    }
+                    else if(i === length - 1){
+                        pCellList[
+                        pValueList.indexOf(playerY + "," + (playerX + i))
+                        ].classList.add("edgeRight");
+                    }
+                    else{
+                        pCellList[
+                        pValueList.indexOf(playerY + "," + (playerX + i))
+                        ].classList.add("edgeFlip");
+                    }
 
-      case 2:
-        for (let i = 0; i < length; i++) {
-          pCellList[
-            pValueList.indexOf(pSelectedY + "," + (pSelectedX + i))
-          ].classList.add("permSelected");
-          pCellList[
-            pValueList.indexOf(pSelectedY + "," + (pSelectedX + i))
-          ].classList.remove("selected");
-          pSelectList[
-            pValueList.indexOf(pSelectedY + "," + (pSelectedX + i))
-          ] = true;
+                    pCellList[
+                        pValueList.indexOf(playerY + "," + (playerX + i))
+                    ].classList.add("permSelected");
+                    pCellList[
+                        pValueList.indexOf(playerY + "," + (playerX + i))
+                    ].classList.remove("selected");
+                    pSelectList[
+                        pValueList.indexOf(playerY + "," + (playerX + i))
+                    ] = true;
+                }
+                break;
+            }
+            boatMan();
+        if (boatMaxAmount === 0) {
+            document.getElementById("rotate").classList.add("hidden");
         }
-        break;
     }
-    if (pBoatMax === 0) {
-      document.getElementById("rotate").classList.add("hidden");
+}
+
+function AddBoatComputer(length, direction){
+    switch(direction){
+        case 1:
+            for (let i = 0; i < length; i++) {
+                // if(i === 0){
+                //     cCellList[
+                //     cValueList.indexOf(computerY + i + "," + computerX)
+                //     ].classList.add("edgeTop");
+                // }
+                // else if(i === length - 1){
+                //     cCellList[
+                //     cValueList.indexOf(computerY + i + "," + computerX)
+                //     ].classList.add("edgeBottom");
+                // }
+                
+                // else{
+                //     cCellList[
+                //     cValueList.indexOf(computerY + i + "," + computerX)
+                //     ].classList.add("edge");
+                // }   
+                cSelectList[cValueList.indexOf(computerY + i + "," + computerX)] = true;
+                // cCellList[
+                //         cValueList.indexOf(computerY + i + "," + (computerX))
+                //     ].classList.add("permSelectedComp");
+            }
+            break;
+        case 2:
+            for (let i = 0; i < length; i++) {
+                // if(i === 0){
+                //     cCellList[
+                //     cValueList.indexOf(computerY + "," + (computerX + i))
+                //     ].classList.add("edgeLeft");
+                // }
+                // else if(i === length - 1){
+                //     cCellList[
+                //     cValueList.indexOf(computerY + "," + (computerX + i))
+                //     ].classList.add("edgeRight");
+                // }
+                
+                // else{
+                //     cCellList[
+                //     cValueList.indexOf(computerY + "," + (computerX + i))
+                //     ].classList.add("edgeFlip");
+                // }   
+                cSelectList[cValueList.indexOf(computerY + "," + (computerX + i))] = true;
+                // cCellList[
+                //         cValueList.indexOf(computerY + "," + (computerX + i))
+                //     ].classList.add("permSelectedComp");
+            }
+            break;
     }
-  }
+}
+
+function BoatGuessComputer(){
+    let check = false;
+    while(check === false){
+        let guessX = Math.floor(Math.random() * 8);
+        let guessY = Math.floor(Math.random() * 8); 
+        if(playerGuess[pValueList.indexOf((guessY) + "," + guessX)] === false){
+            playerGuess[pValueList.indexOf((guessY) + "," + guessX)] = true;
+            if (pSelectList[pValueList.indexOf((guessY) + "," + guessX)] === true) {
+                pCellList[pValueList.indexOf(guessY + "," + guessX)].innerHTML = "<img src=\"X.png\">";
+                guessMaxComputer--;
+                if(guessMaxComputer === 0){
+                    console.log("computer wins");
+                }
+            }
+            else{
+                pCellList[pValueList.indexOf(guessY + "," + guessX)].innerHTML = "<img src=\"O.png\">";
+            }
+            check = true;
+        }
+    }
+
+}
+
+function CheckPlacement(length, direction, x, y, selectList, valueList){
+    if(
+    CheckOccupied(length, direction, x, y, selectList, valueList) === false &&
+    CheckEdge(length, direction, x, y) === false){
+        return true;
+    }
 }
 
 function removeBoat(length, direction) {
   if (
-    CheckOccupied(length, direction) === false &&
-    CheckEdge(length, direction, pSelectedX, pSelectedY) === false &&
-    pBoatMax > 0
+    CheckPlacement(length, direction, playerX, playerY, pSelectList, pValueList) === true &&
+    playerAdd == true
   ) {
     switch (direction) {
       case 1:
         for (let i = 0; i < length; i++) {
           pCellList[
-            pValueList.indexOf(pSelectedY + i + "," + pSelectedX)
+            pValueList.indexOf(playerY + i + "," + playerX)
           ].classList.remove("selected");
         }
         break;
@@ -160,7 +338,7 @@ function removeBoat(length, direction) {
       case 2:
         for (let i = 0; i < length; i++) {
           pCellList[
-            pValueList.indexOf(pSelectedY + "," + (pSelectedX + i))
+            pValueList.indexOf(playerY + "," + (playerX + i))
           ].classList.remove("selected");
         }
         break;
@@ -168,12 +346,25 @@ function removeBoat(length, direction) {
   }
 }
 
-function CheckOccupied(length, direction) {
+function ComputerBoardBoats(){
+    while(boatMaxAmount > 0) {
+        computerX = Math.floor(Math.random() * 8);
+        computerY = Math.floor(Math.random() * 8);
+        let computerDir = Math.floor(Math.random() * 2) + 1;
+        boatMan();
+        if(CheckPlacement(boatLength, computerDir, computerX, computerY, cSelectList, cValueList)){
+            AddBoatComputer(boatLength, computerDir);
+            boatMaxAmount--;
+        }
+    }
+}
+
+function CheckOccupied(length, direction, x, y, selectList, valueList) {
   switch (direction) {
     case 1:
       for (let i = 0; i < length; i++) {
         if (
-          pSelectList[pValueList.indexOf(pSelectedY + i + "," + pSelectedX)] ===
+          selectList[valueList.indexOf((y + i) + "," + x)] ===
           true
         ) {
           return true;
@@ -183,8 +374,8 @@ function CheckOccupied(length, direction) {
     case 2:
       for (let i = 0; i < length; i++) {
         if (
-          pSelectList[
-            pValueList.indexOf(pSelectedY + "," + (pSelectedX + i))
+          selectList[
+            valueList.indexOf(y + "," + (x + i))
           ] === true
         ) {
           return true;
@@ -194,16 +385,16 @@ function CheckOccupied(length, direction) {
   }
 }
 
-function CheckEdge(length, direction, selectedX, selectedY) {
+function CheckEdge(length, direction, x, y) {
   switch (direction) {
     case 1:
-      if (selectedY + length > 8) {
+      if (y + length > 8) {
         return true;
       } else {
         return false;
       }
     case 2:
-      if (selectedX + length > 8) {
+      if (x + length > 8) {
         return true;
       } else {
         return false;
