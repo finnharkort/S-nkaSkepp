@@ -1,5 +1,17 @@
 "use strict";
 
+//checklist 2020-02-18
+/*
+ - make it impossible to place boats one cell from eachother
+ - add ability to remove and place a boat, this because it is possible to lay out boats in such a way that 
+    you can no longer place another boat
+ - add start screen
+ - maybe add different difficulties
+ - big code cleanup is needed (some algorithms are used over and over again: 
+    create a function or variable for this)
+ - comment all code
+*/
+
 //player
 let pCells = document.querySelector(".player").children;
 let rotateButton = document.querySelector("#rotate");
